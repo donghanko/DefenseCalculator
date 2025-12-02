@@ -1,24 +1,169 @@
-<label>집결자 내성 값</label>
-<div style="display:flex; gap:5px;">
-  <button type="button" onclick="changeValue('gatherer', -250)">-</button>
-  <input type="number" id="gatherer" step="any" />
-  <button type="button" onclick="changeValue('gatherer', 250)">+</button>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>내성 계산기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #74b9ff, #a29bfe);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-<label>요새 내성 값</label>
-<div style="display:flex; gap:5px;">
-  <button type="button" onclick="changeValue('fortress', -250)">-</button>
-  <input type="number" id="fortress" step="any" />
-  <button type="button" onclick="changeValue('fortress', 250)">+</button>
-</div>
+    .container {
+      background: white;
+      width: 360px;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      animation: fadeIn 0.6s ease-out;
+    }
 
-<script>
-function changeValue(id, delta) {
-  const input = document.getElementById(id);
-  let value = parseFloat(input.value) || 0;
-  value += delta;
-  if (value < 0) value = 0; // 음수 방지
-  input.value = value;
-  calculate(); // 값 변경 시 자동 계산
-}
-</script>
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2d3436;
+      letter-spacing: -0.5px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #2d3436;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 16px;
+    }
+
+    input[type=number] {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #dfe6e9;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #6c5ce7;
+      box-shadow: 0 0 6px rgba(108,92,231,0.3);
+      outline: none;
+    }
+
+    button {
+      padding: 10px 12px;
+      background: #6c5ce7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    button:hover {
+      background: #5548d8;
+    }
+
+    .result {
+      margin-top: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #2d3436;
+    }
+
+    .note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #636e72;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>내성 계산기</h2>
+
+    <label>커피 연구소 레벨</label>
+    <div class="input-group">
+      <button type="button" onclick="changeLevel(-1)">-</button>
+      <input type="number" id="coffeeLevel" value="14" min="1" />
+      <button type="button" onclick="changeLevel(1)">+</button>
+    </div>
+
+    <label>버프 적용</label>
+    <div class="input-group">
+      <input type="checkbox" id="buff" onchange="calculate()"> 250 적용
+    </div>
+
+    <label>요새 내성 값</label>
+    <div class="input-group">
+      <button type="button" onclick="changeValue('fortress', -250)">-</button>
+      <input type="number" id="fortress" step="any" />
+      <button type="button" onclick="changeValue('fortress', 250)">+</button>
+    </div>
+
+    <button onclick="calculate()">계산하기</button>
+
+    <div class="result" id="result"></div>
+    <div class="note">계산 방식: 커피 연구소 레벨과 버프 적용 포함. ((요새 - 집결자) / 요새) 를 소수점 둘째 자리에서 올림한 뒤 200을 곱합니다. 최대값 99.99%</div>
+  </div>
+
+  <script>
+    function changeLevel(delta) {
+      const input = document.getElementById('coffeeLevel');
+      let value = parseInt(input.value) || 1;
+      value += delta;
+      if (value < 1) value = 1;
+      input.value = value;
+      calculate();
+    }
+
+    function changeValue(id, delta) {
+      const input = document.getElementById(id);
+      let value = parseFloat(input.value) || 0;
+      value += delta;
+      if (value < 0) value = 0;
+      input.value = value;
+      calculate();
+    }
+
+    function calculate() {
+      const level = parseInt(document.getElementById('coffeeLevel').value);
+      const buff = document.getElementById('buff').checked;
+      const f = parseFloat(document.getElementById('fortress').value);
+
+      if (isNaN(level) || isNaN(f) || f === 0) {
+        document.getElementById('result').innerText = '값을 올바르게 입력하세요.';
+        return;
+      }
+
+      let baseGatherer = 3250 + (level - 14) * 250;
+      if (buff) baseGatherer += 250;
+
+      let ratio = (f - baseGatherer) / f;
+      const ratioCeil2 = Math.ceil(ratio * 100) / 100;
+      let dmgReduction = ratioCeil2 * 200;
+      if (dmgReduction > 99.99) dmgReduction = 99.99;
+
+      document.getElementById('result').innerText = `데미지 감면: ${dmgReduction.toFixed(2)}%`;
+    }
+
+    // 초기 계산
+    calculate();
+  </script>
+</body>
+</html>
