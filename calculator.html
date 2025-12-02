@@ -102,7 +102,7 @@
     <button onclick="calculate()">계산하기</button>
 
     <div class="result" id="result"></div>
-    <div class="note">계산 방식: ((요새 - 집결자) / 요새) 를 소수점 둘째 자리에서 올림한 뒤 200을 곱합니다.</div>
+    <div class="note">계산 방식: ((요새 - 집결자) / 요새) 를 소수점 둘째 자리에서 올림한 뒤 200을 곱합니다. 최대값 99.99%</div>
   </div>
 
   <script>
@@ -116,14 +116,11 @@
         return;
       }
 
-      // 비율 계산
       let ratio = (f - g) / f;
-
-      // 소수점 둘째 자리에서 올림: 예) 0.341 -> 0.35
       const ratioCeil2 = Math.ceil(ratio * 100) / 100;
+      let dmgReduction = ratioCeil2 * 200;
 
-      // 최종 데미지 감면
-      const dmgReduction = ratioCeil2 * 200;
+      if (dmgReduction > 99.99) dmgReduction = 99.99;
 
       resultEl.innerText = `데미지 감면: ${dmgReduction.toFixed(2)}%`;
     }
